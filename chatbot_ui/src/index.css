@@ -1,4 +1,102 @@
 @import "tailwindcss";
-html {
-    scroll-behavior: smooth;
-  }
+
+:root {
+  --bg-canvas: #090d16;
+  --bg-recessed: #0e131f;
+  --bg-elevated: #161f30;
+  --bg-hover: #1c273d;
+  --border-hairline: #1f293d;
+  --border-elevated: rgba(255, 255, 255, 0.08);
+  --accent-primary: #6366f1;
+  --accent-primary-hover: #4f46e5;
+  --accent-cyan: #38bdf8;
+  --accent-emerald: #10b981;
+  --accent-rose: #f43f5e;
+  --accent-amber: #f59e0b;
+
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  letter-spacing: -0.011em;
+  color-scheme: dark;
+}
+
+code, pre, kbd, .font-mono {
+  font-family: 'JetBrains Mono', monospace;
+  letter-spacing: -0.02em;
+}
+
+html, body {
+  background-color: var(--bg-canvas);
+  color: #f1f5f9;
+  overflow: hidden;
+  height: 100%;
+  width: 100%;
+}
+
+/* Hairline borders inspired by Linear and Cursor */
+.border-hairline {
+  border-color: var(--border-hairline);
+}
+
+.border-elevated {
+  border-color: var(--border-elevated);
+}
+
+/* Elevated surface with crisp outline */
+.surface-elevated {
+  background-color: var(--bg-elevated);
+  border: 1px solid var(--border-elevated);
+}
+
+.surface-recessed {
+  background-color: var(--bg-recessed);
+  border-color: var(--border-hairline);
+}
+
+/* Custom instrument scrollbar */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #1f293d;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #334155;
+}
+
+/* Keyboard Shortcut Badge */
+kbd {
+  font-size: 10px;
+  background-color: #090d16;
+  border: 1px solid var(--border-hairline);
+  box-shadow: 0 1px 0 0 var(--border-hairline);
+  color: #94a3b8;
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Fast subtle transitions */
+.transition-fast {
+  transition: all 120ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Subtle pulse animation for telemetry status */
+@keyframes subtle-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(0.95); }
+}
+
+.animate-subtle-pulse {
+  animation: subtle-pulse 2.5s infinite ease-in-out;
+}
