@@ -9,6 +9,8 @@ wheels/
 # Virtual environments
 .venv
 .env
+.pytest_cache/
+*.db
 list
 
 *.rar
@@ -23,3 +25,14 @@ list
 .Trashes
 ehthumbs.db
 Thumbs.db
+
+# Node.js
+node_modules/
+chatbot_ui/node_modules/
+chatbot_ui/dist/
+
+# User uploaded and personal test documents
+documents/user_*/
+documents/test_*.pdf
+documents/NirajMore*.pdf
+documents/Profile.pdf
