@@ -5,11 +5,73 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: query-agent-web
+    container_name: docuchat-api
+    restart: unless-stopped
     ports:
       - "8000:8000"
-    volumes:
-      - ./:/app
     environment:
-      - PYTHONUNBUFFERED=1
-    command: uvicorn src.main.chatbotapi:app --host 0.0.0.0 --port 8000 --reload
+      - APP_ENV=production
+      - DATABASE_URL=postgresql://docuchat:docuchat_secure_pass@postgres:5432/docuchat_db
+      - REDIS_URL=redis://redis:6379/0
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY:-}
+      - PINECONE_API_KEY=${PINECONE_API_KEY:-}
+      - PINECONE_INDEX=${PINECONE_INDEX:-rag-bot}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-docuchat-production-secret-key-change-me-in-env}
+      - LOG_LEVEL=INFO
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - docuchat_data:/app/data
+      - docuchat_logs:/app/logs
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: docuchat-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: docuchat
+      POSTGRES_PASSWORD: docuchat_secure_pass
+      POSTGRES_DB: docuchat_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U docuchat -d docuchat_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: docuchat-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  docuchat_data:
+    driver: local
+  docuchat_logs:
+    driver: local
