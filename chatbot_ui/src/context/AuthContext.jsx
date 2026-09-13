@@ -1,6 +1,9 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 
-const API_BASE = 'http://127.0.0.1:8000/api/v1';
+const API_BASE = import.meta.env.VITE_API_URL 
+  ? `${import.meta.env.VITE_API_URL}/api/v1` 
+  : 'http://127.0.0.1:8000/api/v1';
+
 const TOKEN_KEY = 'docuchat_jwt';
 const USER_KEY = 'docuchat_user';
 

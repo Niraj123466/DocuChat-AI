@@ -72,8 +72,16 @@ class Settings:
         self.ACCESS_TOKEN_EXPIRE_MINUTES: int = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", str(60 * 24)))
 
         # Networking & CORS
-        cors_raw = os.getenv("CORS_ORIGINS", "*")
-        self.CORS_ORIGINS: List[str] = [origin.strip() for origin in cors_raw.split(",") if origin.strip()]
+        cors_raw = os.getenv("CORS_ORIGINS", "*").strip()
+        if cors_raw.startswith("[") and cors_raw.endswith("]"):
+            try:
+                import json
+                parsed = json.loads(cors_raw)
+                self.CORS_ORIGINS: List[str] = [str(x).strip() for x in parsed if str(x).strip()]
+            except Exception:
+                self.CORS_ORIGINS: List[str] = [origin.strip().strip("'\"") for origin in cors_raw.strip("[]").split(",") if origin.strip()]
+        else:
+            self.CORS_ORIGINS: List[str] = [origin.strip() for origin in cors_raw.split(",") if origin.strip()]
 
         # Storage & Persistence
         self.DATABASE_URL: str = os.getenv("DATABASE_URL", f"sqlite+aiosqlite:///{BASE_DIR}/docuchat.db")

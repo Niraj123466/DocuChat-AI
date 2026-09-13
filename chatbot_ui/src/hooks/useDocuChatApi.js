@@ -1,8 +1,9 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 
-const API_BASE = 'http://127.0.0.1:8000/api/v1';
-const METRICS_URL = 'http://127.0.0.1:8000/metrics';
+const BACKEND_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
+const API_BASE = `${BACKEND_URL}/api/v1`;
+const METRICS_URL = `${BACKEND_URL}/metrics`;
 
 export function useDocuChatApi() {
   const { token, user, isAuthenticated, authFetch, setIsAuthModalOpen, logout } = useAuth();
