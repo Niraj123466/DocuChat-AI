@@ -17,9 +17,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-COPY pyproject.toml README.md ./
+COPY pyproject.toml README.md requirements.txt ./
 RUN python -m pip install --upgrade pip setuptools wheel
-RUN pip install --no-cache-dir .
+RUN pip install --no-cache-dir -r requirements.txt .
+
 
 # ==============================================================================
 # Stage 2: Minimal Distroless / Hardened Runner
