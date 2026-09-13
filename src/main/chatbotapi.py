@@ -1,82 +1,15 @@
-from fastapi import FastAPI, HTTPException
-from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
-from src.Workflow.workflow import workflow
-import re
+"""Legacy Web Chatbot API entrypoint.
 
-app = FastAPI()
+Delegates directly to the centralized application in src.api.app
+while preserving legacy imports and endpoint contracts.
+"""
+from __future__ import annotations
 
-class ChatRequest(BaseModel):
-    user_message: str
+import uvicorn
+from src.api.app import app
+from src.api.v1.chat import ChatRequest, ChatResponse
 
-class ChatResponse(BaseModel):
-    response: str
+__all__ = ["app", "ChatRequest", "ChatResponse"]
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],  # or ["http://localhost:5173"] for stricter security
-    allow_credentials=True,
-    allow_methods=["*"],  # important for POST, GET, OPTIONS, etc.
-    allow_headers=["*"],  # allow headers like Content-Type, Authorization
-)
-
-@app.get("/")
-def root():
-    return {"status": "ok", "message": "Chatbot API running"}
-
-
-@app.post("/chatbot", response_model=ChatResponse)
-async def chatbot_endpoint(request: ChatRequest):
-    
-    try:
-        user_input = request.user_message
-        print(f"User message: {user_input}")
-
-        initial_state = {
-            "user_query": user_input,
-            "query_response": "",
-            "evaluation_state": "",
-            "retry_count": 0,
-            "instruction": ""
-        }
-
-        final_state = workflow.invoke(initial_state, config={"verbose": True})
-        print("Workflow final state:", final_state)
-
-        query_response = final_state.get("query_response", "No response generated.")
-
-        if "ValidationOutcome" in query_response:
-           
-            pattern = r'validated_output="((?:[^"\\]|\\.)*)"'
-            match = re.search(pattern, query_response)
-            if match:
-                answer = match.group(1).replace('\\n', '\n').replace('\\"', '"').strip()
-            else:
-                
-                fallback_pattern = r'validated_output=\'([^\']*)\'[, ]'
-                fallback_match = re.search(fallback_pattern, query_response)
-                if fallback_match:
-                    answer = fallback_match.group(1).replace('\\n', '\n').replace('\\"', '"').replace("\\'", "'").strip()
-                else:
-                    
-                    start_idx = query_response.find("validated_output='") + len("validated_output='")
-                    end_idx = query_response.find("',\n    reask=", start_idx)
-                    if end_idx != -1:
-                        raw_content = query_response[start_idx:end_idx]
-                        answer = raw_content.replace('\\n', '\n').replace('\\"', '"').replace("\\'", "'").strip()
-                    else:
-                        answer = "Error parsing validated output."
-        else:
-            
-            answer = query_response.replace("'", "").strip().strip("'").strip()
-
-        
-        answer = re.sub(r'\n+$', '', answer).strip()
-
-        
-        return ChatResponse(response=answer)
-
-    except Exception as e:
-        print("Error in /chatbot:", e)
-        raise HTTPException(status_code=500, detail=str(e))
-# python -m uvicorn src.main.chatbotapi:app --reload
+if __name__ == "__main__":
+    uvicorn.run("src.main.chatbotapi:app", host="0.0.0.0", port=8000, reload=True)
