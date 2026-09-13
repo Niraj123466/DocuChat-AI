@@ -7,5 +7,5 @@ class VectorIndexStrategy(ABC):
         pass
 
     @abstractmethod
-    def semantic_search(self, embeded_query: list[float]) -> str:
+    def semantic_search(self, embeded_query: list[float], top_k: int = 5, user_id: str | None = None) -> str:
         pass
